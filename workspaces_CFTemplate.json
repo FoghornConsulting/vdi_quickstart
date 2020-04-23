@@ -231,8 +231,8 @@
           "Ref": "vpcCidr"
         },
         "InstanceTenancy": "default",
-        "EnableDnsSupport": "true",
-        "EnableDnsHostnames": "true",
+        "EnableDnsSupport": "True",
+        "EnableDnsHostnames": "True",
         "Tags": [
           {
             "Key": "Name",
@@ -253,9 +253,6 @@
     },
     "publicSubnet1": {
       "Type": "AWS::EC2::Subnet",
-      "DependsOn": [
-        "vpc"
-      ],
       "Properties": {
         "CidrBlock": {
           "Ref": "publicSubnet1Cidr"
@@ -283,9 +280,6 @@
     },
     "privateSubnet1": {
       "Type": "AWS::EC2::Subnet",
-      "DependsOn": [
-        "vpc"
-      ],
       "Properties": {
         "CidrBlock": {
           "Ref": "privateSubnet1Cidr"
@@ -325,7 +319,7 @@
     "privateSubnet2": {
       "Type": "AWS::EC2::Subnet",
       "DependsOn": [
-        "vpc","CustomGetExactAZ"
+        "vpc"
       ],
       "Properties": {
         "CidrBlock": {
@@ -389,10 +383,6 @@
     },
     "attachGateway": {
       "Type": "AWS::EC2::VPCGatewayAttachment",
-      "DependsOn": [
-        "vpc",
-        "inetGateway"
-      ],
       "Properties": {
         "VpcId": {
           "Ref": "vpc"
@@ -405,7 +395,6 @@
     "rtbPublic": {
       "Type": "AWS::EC2::RouteTable",
       "DependsOn": [
-        "vpc",
         "attachGateway"
       ],
       "Properties": {
@@ -445,10 +434,6 @@
     },
     "subnetRouteTableAssociationPublic1": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
-      "DependsOn": [
-        "rtbPublic",
-        "publicSubnet1"
-      ],
       "Properties": {
         "RouteTableId": {
           "Ref": "rtbPublic"
@@ -482,9 +467,6 @@
     },
     "NATGateway1": {
       "Type": "AWS::EC2::NatGateway",
-      "DependsOn": [
-        "NATGateway1EIP"
-      ],
       "Properties": {
         "AllocationId": {
           "Fn::GetAtt": [
@@ -499,9 +481,6 @@
     },
     "rtbPrivate1": {
       "Type": "AWS::EC2::RouteTable",
-      "DependsOn": [
-        "vpc"
-      ],
       "Properties": {
         "VpcId": {
           "Ref": "vpc"
@@ -527,8 +506,7 @@
     "subnetRouteTableAssociationPrivate1": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "DependsOn": [
-        "rtbPublic",
-        "privateSubnet1"
+        "rtbPublic"
       ],
       "Properties": {
         "RouteTableId": {
@@ -542,8 +520,7 @@
     "subnetRouteTableAssociationPrivate2": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "DependsOn": [
-        "rtbPublic",
-        "privateSubnet2"
+        "rtbPublic"
       ],
       "Properties": {
         "RouteTableId": {
@@ -568,6 +545,7 @@
     },
     "ADirectory": {
       "Type": "AWS::DirectoryService::SimpleAD",
+      "DependsOn": "RegisterWSFunction",
       "Properties": {
         "Name": {
           "Ref": "corpName"
@@ -596,8 +574,7 @@
     "CustomGetRoleAv": {
       "Type": "Custom::CustomGetRoleAv",
       "DependsOn": [
-        "LambdaExecutionRole",
-        "lambdapolicy"
+        "LambdaExecutionRole"
       ],
       "Properties": {
         "ServiceToken": {
@@ -612,8 +589,7 @@
     "CustomGetExactAZ": {
       "Type": "Custom::CustomGetExactAZ",
       "DependsOn": [
-        "LambdaExecutionRole",
-        "lambdapolicy"
+        "LambdaExecutionRole"
       ],
       "Properties": {
         "ServiceToken": {
@@ -628,18 +604,14 @@
         ]
       }
     },
-    "MyWS": {
-      "Type": "Custom::WS",
-      "DependsOn": [
-        "ADirectory",
-        "LambdaExecutionRole",
-        "lambdapolicy"
-      ],
+    "CustomADregister": {
+      "Type": "Custom::CustomADregister",
+      "DependsOn": ["LambdaExecutionRole",],
       "Version": "1.0",
       "Properties": {
         "ServiceToken": {
           "Fn::GetAtt": [
-            "MyFunction",
+            "RegisterWSFunction",
             "Arn"
           ]
         },
@@ -706,13 +678,9 @@
         }
       }
     }, 
-    "MyFunction": {
+    "RegisterWSFunction": {
       "Type": "AWS::Lambda::Function",
-      "DependsOn": [
-        "ADirectory",
-        "LambdaExecutionRole",
-        "lambdapolicy"
-      ],
+    
       "Properties": {
         "Handler": "index.lambda_handler",
         "Role": {
@@ -785,9 +753,9 @@
               ]
             ]
           }
-        },
+        }, 
         "Handler": "index.lambda_handler",
-        "MemorySize": "128",
+        "MemorySize": 128,
         "Role": {
           "Fn::GetAtt": [
             "LambdaExecutionRole",
@@ -842,8 +810,27 @@
               "Action": [
                 "ec2:CreateNetworkInterface",
                 "ec2:DeleteNetworkInterface",
-                "workspaces:*",
                 "ec2:DescribeNetworkInterfaces",
+                "workspaces:DisassociateIpGroups",
+                "workspaces:ModifyWorkspaceProperties",
+                "workspaces:TerminateWorkspaces",
+                "workspaces:RebuildWorkspaces",
+                "workspaces:AssociateIpGroups",
+                "workspaces:AuthorizeIpRules",
+                "workspaces:RevokeIpRules",
+                "workspaces:ImportWorkspaceImage",
+                "workspaces:CreateWorkspaces",
+                "workspaces:DeleteIpGroup",
+                "workspaces:DeleteWorkspaceImage",
+                "workspaces:StopWorkspaces",
+                "workspaces:DeleteTags",
+                "workspaces:ModifyClientProperties",
+                "workspaces:StartWorkspaces",
+                "workspaces:CreateIpGroup",
+                "workspaces:RebootWorkspaces",
+                "workspaces:ModifyAccount",
+                "workspaces:UpdateRulesOfIpGroup",
+                "workspaces:ModifyWorkspaceState",
                 "galaxy:DescribeDomains"
               ],
               "Effect": "Allow",
@@ -881,7 +868,8 @@
         "ManagedPolicyArns": [
           {
             "Ref": "lambdapolicy"
-          }
+          },
+          {"Ref":"lambdapolicy2"}
         ]
       }
     },
@@ -909,48 +897,58 @@
                 "logs:CreateLogGroup",
                 "logs:CreateLogStream",
                 "logs:PutLogEvents"
-              ],
-              "Resource": "arn:aws:logs:*:*:*"
-            },
+              ],   
+              "Resource": ["arn:aws:logs:*:*:log-group:*:log-stream:*",
+              "arn:aws:logs:*:*:log-group:*"]
+            }
+      
+          ]
+        }
+      }
+    },
+    "lambdapolicy2": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "ManagedPolicyName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "envPrefix"
+              },
+              "lambdarole-policy2"
+            ]
+          ]
+        },
+        "Path": "/",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
             {
-              "Sid": "VisualEditor0",
+              "Sid": "ec2Allow",
               "Effect": "Allow",
               "Action": [
+                "ec2:Describe*",
+                "ec2:Create*",
                 "workspaces:*",
-                "ds:*",
-                "iam:*",
-                "kms:ListAliases",
-                "kms:ListKeys",
-                "ec2:CreateVpc",
-                "ec2:CreateSubnet",
-                "ec2:CreateNetworkInterface",
-                "ec2:CreateInternetGateway",
-                "ec2:CreateRouteTable",
-                "ec2:CreateRoute",
-                "ec2:CreateTags",
-                "ec2:CreateSecurityGroup",
-                "ec2:DescribeInternetGateways",
-                "ec2:DescribeSecurityGroups",
-                "ec2:DescribeRouteTables",
-                "ec2:DescribeVpcs",
-                "ec2:DescribeSubnets",
-                "ec2:DescribeNetworkInterfaces",
-                "ec2:DescribeAvailabilityZones",
-                "ec2:AttachInternetGateway",
-                "ec2:AssociateRouteTable",
-                "ec2:AuthorizeSecurityGroupEgress",
-                "ec2:AuthorizeSecurityGroupIngress",
-                "ec2:DeleteSecurityGroup",
-                "ec2:DeleteNetworkInterface",
-                "ec2:RevokeSecurityGroupEgress",
-                "ec2:RevokeSecurityGroupIngress",
+                "ds:List*",
+                "ds:Create*",
+                "ds:Describe*",
+                "ds:Enable",
+                "ds:Share*",
+                "ds:AuthorizeApplication",
                 "workdocs:RegisterDirectory",
                 "workdocs:DeregisterDirectory",
                 "workdocs:AddUserToGroup",
-                "workdocs:RemoveUserFromGroup"
+                "workdocs:RemoveUserFromGroup",
+                "iam:PassRole", 
+                "iam:GetRole", 
+                "iam:CreateRole", 
+                "iam:PutRolePolicy"
               ],
               "Resource": "*"
             }
+      
           ]
         }
       }
@@ -959,6 +957,7 @@
       "Type": "AWS::KMS::Key",
       "Properties": {
         "Description": "An symmetric CMK",
+        "EnableKeyRotation": "true",
         "KeyPolicy": {
           "Version": "2012-10-17",
           "Id": "key-default-1",
@@ -966,9 +965,7 @@
             {
               "Sid": "Allow administration of the key",
               "Effect": "Allow",
-              "Principal": {
-                "AWS": "*"
-              },
+              "Principal": {"AWS":"*"},
               "Action": [
                 "kms:Create*",
                 "kms:Describe*",
@@ -981,10 +978,39 @@
                 "kms:Get*",
                 "kms:Delete*",
                 "kms:ScheduleKeyDeletion",
-                "kms:CancelKeyDeletion"
+                "kms:CancelKeyDeletion",
+                "kms:EnableKeyRotation",
+                "kms:EnableKey",
+                "kms:ImportKeyMaterial",
+                "kms:Decrypt",
+                "kms:UpdateKeyDescription",
+                "kms:GenerateDataKeyWithoutPlaintext",
+                "kms:Verify",
+                "kms:CancelKeyDeletion",
+                "kms:DeleteImportedKeyMaterial",
+                "kms:GenerateDataKeyPairWithoutPlaintext",
+                "kms:DisableKey",
+                "kms:GenerateDataKeyPair",
+                "kms:ReEncryptFrom",
+                "kms:DisableKeyRotation",
+                "kms:UpdateAlias",
+                "kms:Encrypt",
+                "kms:ScheduleKeyDeletion",
+                "kms:GenerateDataKey",
+                "kms:CreateAlias",
+                "kms:ReEncryptTo",
+                "kms:Sign",
+                "kms:DeleteAlias",
+                "kms:DeleteCustomKeyStore",
+                "kms:GenerateRandom",
+                "kms:UpdateCustomKeyStore",
+                "kms:DisconnectCustomKeyStore",
+                "kms:CreateKey",
+                "kms:ConnectCustomKeyStore",
+                "kms:CreateCustomKeyStore"
               ],
-              "Resource": "*"
-            }
+              "Resource": ["arn:aws:kms:*:*:key/*","arn:aws:kms:*:*:alias/*"]
+            }              
           ]
         }
       }
@@ -992,9 +1018,8 @@
     "Myworkspace": {
       "Type": "AWS::WorkSpaces::Workspace",
       "DependsOn": [
-        "ADirectory",
-        "MyWS",
-        "MyFunction"
+        "CustomADregister",
+        "RegisterWSFunction"
       ],
       "Properties": {
         "BundleId": {
