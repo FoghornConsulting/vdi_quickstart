@@ -15,7 +15,7 @@ You can mix monthly and hourly billing within your AWS account, and you can also
 
 To get started log into your AWS account and navigate to cloudformation.
 
-![Cloudformation Deploy](aws_workspaces/images/1.png)
+![Cloudformation Deploy](images/1.png)
 
 ##### Download this template to your hard drive, then select create stack with new resources (standard). Hit upload template file, next *Choose file* and select the template from the location where it was downloaded.
 
