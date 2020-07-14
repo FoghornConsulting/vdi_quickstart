@@ -1,12 +1,15 @@
 
-### Cloudformation AWS Workspaces Deployment
+### Cloudformation AWS WorkSpaces Deployment
 
 This guide will assist in the deployment of an AWS workspace environment by using a cloudformation template. 
 
-<https://github.com/FoghornConsulting/vdi_quickstart/blob/master/aws_workspaces/README.md>
+[AWS WorkSpaces](aws_workspaces/)
+
 
 ### Terraform AzureRM Windows Virtual Desktop Deployment
 
-Use Terraform AzureRM provider to deploy a new hostpool or modifies an existing hostpool of Azure Virtual Desktop Windows 10 machines.
+Use Terraform AzureRM provider to deploy a new hostpool or modifies an existing hostpool of Azure Virtual Desktop Windows 10 machines. 
 
-<https://github.com/FoghornConsulting/vdi_quickstart/blob/master/azure_virtual_desktop/wvd-sh/terraform-azurerm-windowsvirtualdesktop/README.md>
+This repo was forked from [RDS-Templates](https://github.com/Azure/RDS-Templates)
+
+[Azure Virtual Desktop](azure_virtual_desktop/)
