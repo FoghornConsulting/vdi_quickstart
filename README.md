@@ -12,4 +12,4 @@ Use Terraform AzureRM provider to deploy a new hostpool or modifies an existing 
 
 This repo was forked from [RDS-Templates](https://github.com/Azure/RDS-Templates)
 
-[Azure Virtual Desktop](azure_virtual_desktop/wvd-sh/terraform-azurerm-windowsvirtualdesktop/)
+[Azure Virtual Desktop](azure_virtual_desktop/Azure_Provider/Azure_WVD/)
