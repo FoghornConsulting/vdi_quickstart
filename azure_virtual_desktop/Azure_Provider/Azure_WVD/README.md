@@ -4,6 +4,33 @@
 
 Deploys a new hostpool or modifies an existing hostpool of Azure Virtual Desktop Windows 10 machines
 
+## Usage
+
+In order to quickly deploy a WVD host pool in your Azure environment create a terraform.tfvars file with variables similar to the ones below. Make sure to update variables with values that are unique to your environment. The tenant_app_id user must have permissions to create a tenant and the user supplied for the domain_user_upn variable must have permissions to add a computer to the adatam.com domain.
+
+subscription_id                             = "..."
+tenant_app_id                               = "user@contoso.com"
+tenant_app_password                         = "p@$Sw0rD123"
+aad_tenant_id                               = "..."
+tenant_name                                 = "ExampleWVDtenant"
+resource_group_name                         = "WinVirtualDesktop"
+domain_user_upn                             = "user"
+domain_name                                 = "adatum.com"
+domain_password                             = "p@$Sw0rD123q"
+host_pool_name                              = "WVD-Host-Pool01"
+ou_path                                     = "DC=adatum,DC=com"
+vm_prefix                                   = "adatumwvd"
+vm_timezone                                 = "Pacific Standard Time"
+dns_servers                                 = ["10.0.0.4", "10.0.0.5"]
+aadds_vnet_rg_name                          = "Adatum_AADS"
+aadds_vnet_name                             = "aadds-vnet"
+wvd_address_space                           = ["10.20.0.0/16"]
+wvd_address_prefix                          = "10.20.2.0/24"
+wvd_vnet_name                               = "wvd-vnet"
+log_analytics_workspace_id                  = "..."
+log_analytics_workspace_primary_shared_key  = "..."
+
+
 ## Inputs
 
 | Name | Description | Type | Default | Required |
