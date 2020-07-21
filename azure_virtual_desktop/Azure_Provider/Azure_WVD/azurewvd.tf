@@ -1,0 +1,26 @@
+module "terraform-azurerm-windowsvirtualdesktop" {
+  source                                        = "../../wvd-sh/terraform-azurerm-windowsvirtualdesktop"
+  subscription_id                               = var.subscription_id
+  tenant_app_id                                 = var.tenant_app_id
+  tenant_app_password                           = var.tenant_app_password
+  aad_tenant_id                                 = var.aad_tenant_id
+  tenant_name                                   = var.tenant_name
+  region                                        = var.region
+  resource_group_name                           = var.resource_group_name
+  host_pool_name                                = var.host_pool_name
+  domain_name                                   = var.domain_name
+  ou_path                                       = var.ou_path
+  domain_user_upn                               = var.domain_user_upn
+  domain_password                               = var.domain_password
+  vm_sku                                        = var.vm_sku
+  vm_prefix                                     = var.vm_prefix
+  vm_timezone                                   = var.vm_timezone
+  dns_servers                                   = var.dns_servers
+  wvd_address_space                             = var.wvd_address_space
+  wvd_address_prefix                            = var.wvd_address_prefix
+  wvd_vnet_name                                 = var.wvd_vnet_name
+  aadds_vnet_rg_name                            = var.aadds_vnet_rg_name
+  aadds_vnet_name                               = var.aadds_vnet_name
+  log_analytics_workspace_id                    = var.log_analytics_workspace_id
+  log_analytics_workspace_primary_shared_key    = var.log_analytics_workspace_primary_shared_key
+}

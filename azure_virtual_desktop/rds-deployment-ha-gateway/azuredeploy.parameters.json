@@ -1,0 +1,51 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "_artifactsLocation": {
+      "value": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/rds-deployment-ha-gateway/"
+    },
+    "backendAddressPools": {
+      "value": "backendAddressPool"
+    },
+    "brokerServer": {
+      "value": "rdcb-01.contoso.com"
+    },
+    "dnsLabelPrefix": {
+      "value": "{enter_external_fqdn_prefix_here (example:gateway)}"
+    },
+    "existingAdminPassword": {
+      "value": "{enter_existing_adminUsername_password_here}"
+    },
+    "existingAdminUsername": {
+      "value": "cloudadmin"
+    },
+    "existingDomainName": {
+      "value": "contoso.com"
+    },
+    "existingSubnetName": {
+      "value": "subnet"
+    },
+    "existingVnetName": {
+      "value": "vnet"
+    },
+    "externalFqdn": {
+      "value": "{enter_external_fqdn_here(example: gateway.contoso.com)}"
+    },
+    "gatewayloadBalancer": {
+      "value": "loadBalancer"
+    },
+    "gatewayPublicIp": {
+      "value": "gwpip"
+    },
+    "gw-availabilityset": {
+      "value": "gw-availabilityset"
+    },
+    "numberOfWebGwInstances": {
+      "value": 1
+    },
+    "storageAccountName": {
+      "value": "{enter_existing_storage_account_here}"
+    }
+  }
+}

@@ -1,0 +1,1152 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Cloudformation workspace setup, for region us-east-1.",
+  "Parameters": {
+    "envPrefix": {
+      "Description": "Environment name prefix.",
+      "Type": "String",
+      "Default": "Example"
+    },
+    "userName": {
+      "Description": "Enter the username to log into the workspace environment.",
+      "Type": "String",
+      "Default": "Administrator"
+    },
+    "nameTag": {
+      "Description": "Enter a name to tag the machine .",
+      "Type": "String",
+      "Default": "WorkSpace-Windows"
+    },
+    "RootVolumeSizeGib": {
+      "Description": "Enter the size of the root volume for the machine (Root and user volume size (GB) must be (80|10), (80|50), (80|100), (175+|100+).",
+      "Type": "String",
+      "Default": "80",
+      "AllowedValues": [
+        "80",
+        "175"
+      ]
+    },
+    "RunningMode": {
+      "Description": "Enter the running mode for a WorkSpace which determines its immediate availability and how you pay for it.",
+      "Type": "String",
+      "Default": "AUTO_STOP",
+      "AllowedValues": [
+        "ALWAYS_ON",
+        "AUTO_STOP"
+      ]
+    },
+    "RunningModeAutoStopTimeoutInMinutes": {
+      "Description": "Enter the time after a user logs off when WorkSpaces are automatically stopped. Configured in 60-minute intervals (ONLY needed if RunningMode above was set to AUTO_STOP).",
+      "Type": "String",
+      "Default": "60"
+    },
+    "UserVolumeSizeGib": {
+      "Description": "Enter the size of the user storage for the machine (Root and user volume size (GB) must be (80|10), (80|50), (80|100), (175+|100+).",
+      "Type": "String",
+      "Default": "100",
+      "AllowedValues": [
+        "10",
+        "50",
+        "100"
+      ]
+    },
+    "encrypt": {
+      "Description": "Select whether the data stored on the user volume is encrypted.",
+      "Type": "String",
+      "Default": "True",
+      "AllowedValues": [
+        "True",
+        "False"
+      ]
+    },
+    "encryptroot": {
+      "Description": "Select whether the data stored on the user volume is encrypted.",
+      "Type": "String",
+      "Default": "True",
+      "AllowedValues": [
+        "True",
+        "False"
+      ]
+    },
+    "vpcCidr": {
+      "Description": "VPC CIDR block for the network.",
+      "Type": "String",
+      "Default": "10.10.0.0/16",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+    "corpName": {
+      "Description": "Enter corporation name for Active Directory.",
+      "Type": "String",
+      "Default": "example.com"
+    },
+    "password": {
+      "Description": "Enter the password the authenticate into workspace.Passwords must be between 8 and 64 characters and include three of these four categories: lowercase, uppercase, numeric, and special characters. .eg p@$$w0Rd",
+      "Type": "String",
+      "NoEcho": "true",
+      "MinLength": 8
+    },
+    "addSize": {
+      "Description": "Choose the size of your corporation.",
+      "Type": "String",
+      "Default": "Small",
+      "AllowedValues": [
+        "Small",
+        "Large"
+      ]
+    },
+    "publicSubnet1Cidr": {
+      "Description": "Public subnet 1 CIDR block.",
+      "Type": "String",
+      "Default": "10.10.1.0/24",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x and subnet of VPC."
+    },
+    "privateSubnet1Cidr": {
+      "Description": "Private subnet 1 CIDR block.",
+      "Type": "String",
+      "Default": "10.10.2.0/24",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x and subnet of VPC."
+    },
+    "privateSubnet2Cidr": {
+      "Description": "Private subnet 2 CIDR block.",
+      "Type": "String",
+      "Default": "10.10.3.0/24",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x and subnet of VPC."
+    },
+    "WorkstationType": {
+      "AllowedValues": [
+        "Standard-Amazon-Linux2-Desktop",
+        "Power-Amazon-Linux2-Desktop",
+        "PowerPro-Win7-Desktop",
+        "Power-Win10-Desktop"
+      ],
+      "Description": "Select the type of workstation",
+      "Default": "Standard-Amazon-Linux2-Desktop",
+      "Type": "String"
+    }
+  },
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Label": {
+            "default": "Workspace Configuration"
+          },
+          "Parameters": [
+            "WorkstationType",
+            "nameTag",
+            "encrypt",
+            "encryptroot",
+            "RootVolumeSizeGib",
+            "UserVolumeSizeGib",
+            "RunningMode",
+            "RunningModeAutoStopTimeoutInMinutes"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Network Configuration"
+          },
+          "Parameters": [
+            "vpcCidr",
+            "publicSubnet1Cidr",
+            "privateSubnet1Cidr",
+            "privateSubnet2Cidr"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Active Directory Configuration"
+          },
+          "Parameters": [
+            "corpName",
+            "userName",
+            "password",
+            "addSize"
+          ]
+        }
+      ]
+    }
+  },
+  "Mappings": {
+    "WSTypeMap": {
+      "Standard-Amazon-Linux2-Desktop": {
+        "BundleId": "wsb-clj85qzj1"
+      },
+      "PowerPro-Win7-Desktop": {
+        "BundleId": "wsb-1pzkp0bx4"
+      },
+      "Power-Amazon-Linux2-Desktop": {
+        "BundleId": "wsb-2bs6k5lgn"
+      },
+      "Power-Win10-Desktop": {
+        "BundleId": "wsb-6cdbk8901"
+      }
+    }
+  },
+  "Conditions": {
+    "Mode": {
+      "Fn::Equals": [
+        {
+          "Ref": "RunningMode"
+        },
+        "AUTO_STOP"
+      ]
+    },
+    "encryption": {
+      "Fn::Equals": [
+        {
+          "Ref": "encrypt"
+        },
+        "True"
+      ]
+    },
+    "encryptroot": {
+      "Fn::Equals": [
+        {
+          "Ref": "encrypt"
+        },
+        "True"
+      ]
+    },
+    "encryptall": {
+      "Fn::Or": [
+        {
+          "Condition": "encryption"
+        },
+        {
+          "Condition": "encryptroot"
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "vpc": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": {
+          "Ref": "vpcCidr"
+        },
+        "InstanceTenancy": "default",
+        "EnableDnsSupport": "True",
+        "EnableDnsHostnames": "True",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "envPrefix"
+                  },
+                  "VPC"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "publicSubnet1": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "CidrBlock": {
+          "Ref": "publicSubnet1Cidr"
+        },
+        "VpcId": {
+          "Ref": "vpc"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "envPrefix"
+                  },
+                  "Subnet-Public-1"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "privateSubnet1": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "CidrBlock": {
+          "Ref": "privateSubnet1Cidr"
+        },
+        "AvailabilityZone": {
+          "Fn::Select": [
+            "0",
+            {
+              "Fn::GetAtt": [
+                "CustomGetExactAZ",
+                "ExactAZ"
+              ]
+            }
+          ]
+        },
+        "VpcId": {
+          "Ref": "vpc"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "envPrefix"
+                  },
+                  "Subnet-Private-1"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "privateSubnet2": {
+      "Type": "AWS::EC2::Subnet",
+      "DependsOn": [
+        "vpc"
+      ],
+      "Properties": {
+        "CidrBlock": {
+          "Ref": "privateSubnet2Cidr"
+        },
+        "AvailabilityZone": {
+          "Fn::Select": [
+            "1",
+            {
+              "Fn::GetAtt": [
+                "CustomGetExactAZ",
+                "ExactAZ"
+              ]
+            }
+          ]
+        },
+        "VpcId": {
+          "Ref": "vpc"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "envPrefix"
+                  },
+                  "Subnet-Private-2"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "inetGateway": {
+      "Type": "AWS::EC2::InternetGateway",
+      "DependsOn": [
+        "vpc"
+      ],
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "envPrefix"
+                  },
+                  "InternetGateway"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "attachGateway": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "VpcId": {
+          "Ref": "vpc"
+        },
+        "InternetGatewayId": {
+          "Ref": "inetGateway"
+        }
+      }
+    },
+    "rtbPublic": {
+      "Type": "AWS::EC2::RouteTable",
+      "DependsOn": [
+        "attachGateway"
+      ],
+      "Properties": {
+        "VpcId": {
+          "Ref": "vpc"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "envPrefix"
+                  },
+                  "RTB-Public"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "routePublic": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": "attachGateway",
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "RouteTableId": {
+          "Ref": "rtbPublic"
+        },
+        "GatewayId": {
+          "Ref": "inetGateway"
+        }
+      }
+    },
+    "subnetRouteTableAssociationPublic1": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "rtbPublic"
+        },
+        "SubnetId": {
+          "Ref": "publicSubnet1"
+        }
+      }
+    },
+    "NATGateway1EIP": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "envPrefix"
+                  },
+                  "NatElaticIP"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "NATGateway1": {
+      "Type": "AWS::EC2::NatGateway",
+      "Properties": {
+        "AllocationId": {
+          "Fn::GetAtt": [
+            "NATGateway1EIP",
+            "AllocationId"
+          ]
+        },
+        "SubnetId": {
+          "Ref": "publicSubnet1"
+        }
+      }
+    },
+    "rtbPrivate1": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "vpc"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "envPrefix"
+                  },
+                  "RTB-Private1"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "subnetRouteTableAssociationPrivate1": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "DependsOn": [
+        "rtbPublic"
+      ],
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "rtbPrivate1"
+        },
+        "SubnetId": {
+          "Ref": "privateSubnet1"
+        }
+      }
+    },
+    "subnetRouteTableAssociationPrivate2": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "DependsOn": [
+        "rtbPublic"
+      ],
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "rtbPrivate1"
+        },
+        "SubnetId": {
+          "Ref": "privateSubnet2"
+        }
+      }
+    },
+    "PrivateRoute1": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "rtbPrivate1"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {
+          "Ref": "NATGateway1"
+        }
+      }
+    },
+    "ADirectory": {
+      "Type": "AWS::DirectoryService::SimpleAD",
+      "DependsOn": "RegisterWSFunction",
+      "Properties": {
+        "Name": {
+          "Ref": "corpName"
+        },
+        "Password": {
+          "Ref": "password"
+        },
+        "Size": {
+          "Ref": "addSize"
+        },
+        "VpcSettings": {
+          "SubnetIds": [
+            {
+              "Ref": "privateSubnet1"
+            },
+            {
+              "Ref": "privateSubnet2"
+            }
+          ],
+          "VpcId": {
+            "Ref": "vpc"
+          }
+        }
+      }
+    },
+    "CustomGetRoleAv": {
+      "Type": "Custom::CustomGetRoleAv",
+      "DependsOn": [
+        "LambdaExecutionRole"
+      ],
+      "Properties": {
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "GetRoleFunction",
+            "Arn"
+          ]
+        },
+        "Role-Name": "workspaces_DefaultRole"
+      }
+    },
+    "CustomGetExactAZ": {
+      "Type": "Custom::CustomGetExactAZ",
+      "DependsOn": [
+        "LambdaExecutionRole"
+      ],
+      "Properties": {
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "GetExactAZ",
+            "Arn"
+          ]
+        },
+        "Availability-Zone": [
+          "use1-az4",
+          "use1-az6"
+        ]
+      }
+    },
+    "CustomADregister": {
+      "Type": "Custom::CustomADregister",
+      "DependsOn": ["LambdaExecutionRole",],
+      "Version": "1.0",
+      "Properties": {
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "RegisterWSFunction",
+            "Arn"
+          ]
+        },
+        "DirectoryId": {
+          "Ref": "ADirectory"
+        },
+        "SubnetIds": [
+          {
+            "Ref": "privateSubnet1"
+          },
+          {
+            "Ref": "privateSubnet2"
+          }
+        ]
+      }
+    },
+    "GetRoleFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Handler": "index.lambda_handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "LambdaExecutionRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "python3.6",
+        "Timeout": 300,
+        "Code": {
+          "ZipFile": {
+            "Fn::Join": [
+              "\n",
+              [
+                "import json",
+                "import boto3",
+                "import cfnresponse",
+                "def lambda_handler(event, context):",
+                " role_available=[]",
+                " role_json={}",
+                " if event['RequestType'] =='Create':",
+                "  name=event['ResourceProperties']['Role-Name']",
+                "  print (name)",
+                "  client = boto3.client('iam')",
+                "  collection = ['SkyLightSelfServiceAccess', 'SkyLightServiceAccess']",
+                "  for x in collection:",
+                "   try:",
+                "    response = client.delete_role_policy(",
+                "    RoleName=name,",
+                "    PolicyName=x",
+                "    )",
+                "   except:",
+                "       pass",
+                "  try:",
+                "   response1 = client.delete_role(",
+                "    RoleName=name,",
+                "    ) ",
+                "  except:",
+                "   pass",
+                "   role_json={'RoleFunction': 'SUCCESS'}",
+                "   cfnresponse.send(event, context, cfnresponse.SUCCESS, role_json)" 
+              ]
+            ]
+          }
+        }
+      }
+    }, 
+    "RegisterWSFunction": {
+      "Type": "AWS::Lambda::Function",
+    
+      "Properties": {
+        "Handler": "index.lambda_handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "LambdaExecutionRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "python3.6",
+        "Timeout": 300,
+        "Code": {
+          "ZipFile": {
+            "Fn::Join": [
+              "\n",
+              [
+                "import json",
+                "import boto3",
+                "import cfnresponse",
+                "client = boto3.client('workspaces')",
+                "def lambda_handler(event, context):",
+                " if event['RequestType']=='Create':",
+                "  print (event)",
+                "  directoryId = event['ResourceProperties']['DirectoryId']",
+                "  subnetIds   = event['ResourceProperties']['SubnetIds']",
+                "  az          = event['ResourceProperties']['SubnetIds']",
+                "  response = client.register_workspace_directory(",
+                "          DirectoryId=directoryId,",
+                "          SubnetIds=subnetIds,",
+                "          EnableWorkDocs=True,",
+                "          EnableSelfService=True,",
+                "          Tenancy='SHARED',",
+                "          Tags=[",
+                "              {",
+                "                  'Key': 'Name',",
+                "                 'Value': 'ExampleCorp'",
+                "              },",
+                "          ]",
+                "   ) ",
+                "  print (response) ",
+                " responseData = {}",
+                " cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData, \"CustomResourcePhysicalID\")"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "GetExactAZ": {
+      "Properties": {
+        "Code": {
+          "ZipFile": {
+            "Fn::Join": [
+              "\n",
+              [
+                "import boto3",
+                "import cfnresponse",
+                "def lambda_handler(event, context):",
+                "  json_data={}",
+                "  exact_az=[]",
+                "  if event['RequestType'] =='Create':",
+                "    ec2client = boto3.client('ec2')",
+                "    for az in event['ResourceProperties']['Availability-Zone'] :",
+                "      print (az)",
+                "      response1=ec2client.describe_availability_zones(Filters=[{'Name': 'zone-id', 'Values': [az]}])",
+                "      print (response1)",
+                "      exact_az.append(response1['AvailabilityZones'][0]['ZoneName'])",
+                "      print (exact_az)",
+                "    json_data={'ExactAZ': exact_az}",
+                "    cfnresponse.send(event, context, cfnresponse.SUCCESS,json_data)"
+              ]
+            ]
+          }
+        }, 
+        "Handler": "index.lambda_handler",
+        "MemorySize": 128,
+        "Role": {
+          "Fn::GetAtt": [
+            "LambdaExecutionRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "python3.6",
+        "Timeout": "300"
+      },
+      "Type": "AWS::Lambda::Function"
+    },
+    "DefaultRole": {
+      "Type": "AWS::IAM::Role",
+      "DependsOn": ["GetRoleFunction", "CustomGetRoleAv"],
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "workspaces.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Path": "/",
+        "RoleName":"workspaces_DefaultRole"
+      }
+    },
+    "DefaultRolePolicy": {
+      "Type": "AWS::IAM::Policy",
+      "DependsOn": ["GetRoleFunction", "CustomGetRoleAv"],
+      "Properties": {
+        "PolicyName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "envPrefix"
+              },
+              "SkyLightServiceAccess"
+            ]
+          ]
+        },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": [
+                "ec2:CreateNetworkInterface",
+                "ec2:DeleteNetworkInterface",
+                "ec2:DescribeNetworkInterfaces",
+                "workspaces:DisassociateIpGroups",
+                "workspaces:ModifyWorkspaceProperties",
+                "workspaces:TerminateWorkspaces",
+                "workspaces:RebuildWorkspaces",
+                "workspaces:AssociateIpGroups",
+                "workspaces:AuthorizeIpRules",
+                "workspaces:RevokeIpRules",
+                "workspaces:ImportWorkspaceImage",
+                "workspaces:CreateWorkspaces",
+                "workspaces:DeleteIpGroup",
+                "workspaces:DeleteWorkspaceImage",
+                "workspaces:StopWorkspaces",
+                "workspaces:DeleteTags",
+                "workspaces:ModifyClientProperties",
+                "workspaces:StartWorkspaces",
+                "workspaces:CreateIpGroup",
+                "workspaces:RebootWorkspaces",
+                "workspaces:ModifyAccount",
+                "workspaces:UpdateRulesOfIpGroup",
+                "workspaces:ModifyWorkspaceState",
+                "galaxy:DescribeDomains"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "DefaultRole"
+          }
+        ]
+      }
+    },
+    "LambdaExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Path": "/",
+        "ManagedPolicyArns": [
+          {
+            "Ref": "lambdapolicy"
+          },
+          {"Ref":"lambdapolicy2"}
+        ]
+      }
+    },
+    "lambdapolicy": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "ManagedPolicyName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "envPrefix"
+              },
+              "lambdarole-policy"
+            ]
+          ]
+        },
+        "Path": "/",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],   
+              "Resource": ["arn:aws:logs:*:*:log-group:*:log-stream:*",
+              "arn:aws:logs:*:*:log-group:*"]
+            }
+      
+          ]
+        }
+      }
+    },
+    "lambdapolicy2": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "ManagedPolicyName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "envPrefix"
+              },
+              "lambdarole-policy2"
+            ]
+          ]
+        },
+        "Path": "/",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "ec2Allow",
+              "Effect": "Allow",
+              "Action": [
+                "ec2:Describe*",
+                "ec2:Create*",
+                "workspaces:*",
+                "ds:List*",
+                "ds:Create*",
+                "ds:Describe*",
+                "ds:Enable",
+                "ds:Share*",
+                "ds:AuthorizeApplication",
+                "workdocs:RegisterDirectory",
+                "workdocs:DeregisterDirectory",
+                "workdocs:AddUserToGroup",
+                "workdocs:RemoveUserFromGroup",
+                "iam:PassRole", 
+                "iam:GetRole", 
+                "iam:CreateRole", 
+                "iam:PutRolePolicy"
+              ],
+              "Resource": "*"
+            }
+      
+          ]
+        }
+      }
+    },
+    "workspaceKey": {
+      "Type": "AWS::KMS::Key",
+      "Properties": {
+        "Description": "An symmetric CMK",
+        "EnableKeyRotation": "true",
+        "KeyPolicy": {
+          "Version": "2012-10-17",
+          "Id": "key-default-1",
+          "Statement": [
+            {
+              "Sid": "Allow administration of the key",
+              "Effect": "Allow",
+              "Principal": {"AWS":"*"},
+              "Action": [
+                "kms:Create*",
+                "kms:Describe*",
+                "kms:Enable*",
+                "kms:List*",
+                "kms:Put*",
+                "kms:Update*",
+                "kms:Revoke*",
+                "kms:Disable*",
+                "kms:Get*",
+                "kms:Delete*",
+                "kms:ScheduleKeyDeletion",
+                "kms:CancelKeyDeletion",
+                "kms:EnableKeyRotation",
+                "kms:EnableKey",
+                "kms:ImportKeyMaterial",
+                "kms:Decrypt",
+                "kms:UpdateKeyDescription",
+                "kms:GenerateDataKeyWithoutPlaintext",
+                "kms:Verify",
+                "kms:CancelKeyDeletion",
+                "kms:DeleteImportedKeyMaterial",
+                "kms:GenerateDataKeyPairWithoutPlaintext",
+                "kms:DisableKey",
+                "kms:GenerateDataKeyPair",
+                "kms:ReEncryptFrom",
+                "kms:DisableKeyRotation",
+                "kms:UpdateAlias",
+                "kms:Encrypt",
+                "kms:ScheduleKeyDeletion",
+                "kms:GenerateDataKey",
+                "kms:CreateAlias",
+                "kms:ReEncryptTo",
+                "kms:Sign",
+                "kms:DeleteAlias",
+                "kms:DeleteCustomKeyStore",
+                "kms:GenerateRandom",
+                "kms:UpdateCustomKeyStore",
+                "kms:DisconnectCustomKeyStore",
+                "kms:CreateKey",
+                "kms:ConnectCustomKeyStore",
+                "kms:CreateCustomKeyStore"
+              ],
+              "Resource": ["arn:aws:kms:*:*:key/*","arn:aws:kms:*:*:alias/*"]
+            }              
+          ]
+        }
+      }
+    },
+    "Myworkspace": {
+      "Type": "AWS::WorkSpaces::Workspace",
+      "DependsOn": [
+        "CustomADregister",
+        "RegisterWSFunction"
+      ],
+      "Properties": {
+        "BundleId": {
+          "Fn::FindInMap": [
+            "WSTypeMap",
+            {
+              "Ref": "WorkstationType"
+            },
+            "BundleId"
+          ]
+        },
+        "DirectoryId": {
+          "Ref": "ADirectory"
+        },
+        "RootVolumeEncryptionEnabled": {
+          "Ref": "encryptroot"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "envPrefix"
+                  },
+                  {
+                    "Ref": "nameTag"
+                  }
+                ]
+              ]
+            }
+          }
+        ],
+        "UserName": {
+          "Ref": "userName"
+        },
+        "UserVolumeEncryptionEnabled": {
+          "Ref": "encrypt"
+        },
+        "VolumeEncryptionKey": {
+          "Fn::If": [
+            "encryptall",
+            {
+              "Ref": "workspaceKey"
+            },
+            {
+              "Ref": "AWS::NoValue"
+            }
+          ]
+        },
+        "WorkspaceProperties": {
+          "RootVolumeSizeGib": {
+            "Ref": "RootVolumeSizeGib"
+          },
+          "RunningMode": {
+            "Ref": "RunningMode"
+          },
+          "RunningModeAutoStopTimeoutInMinutes": {
+            "Fn::If": [
+              "Mode",
+              {
+                "Ref": "RunningModeAutoStopTimeoutInMinutes"
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          },
+          "UserVolumeSizeGib": {
+            "Ref": "UserVolumeSizeGib"
+          }
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "WorkSpaceID": {
+      "Description": "ID of the newly created WorkSpace",
+      "Value": {
+        "Ref": "Myworkspace"
+      }
+    },
+    "UserName": {
+      "Description": "The username for WorkSpace",
+      "Value": {
+        "Ref": "userName"
+      }
+    },
+    "LogonURL": {
+      "Description": "Use this URL to download client software used to connect to your cloud desktop",
+      "Value": "https://clients.amazonworkspaces.com/"
+    },
+    "DirectoryID": {
+      "Description": "ID of the SimpleAD",
+      "Value": {
+        "Ref": "ADirectory"
+      }
+    },
+    "PrimaryDNS": {
+      "Description": "DNS IPs of the SimpleAD",
+      "Value": {
+        "Fn::Select": [
+          "0",
+          {
+            "Fn::GetAtt": [
+              "ADirectory",
+              "DnsIpAddresses"
+            ]
+          }
+        ]
+      }
+    },
+    "SecondaryDNS": {
+      "Description": "DNS IPs of the SimpleAD",
+      "Value": {
+        "Fn::Select": [
+          "1",
+          {
+            "Fn::GetAtt": [
+              "ADirectory",
+              "DnsIpAddresses"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
